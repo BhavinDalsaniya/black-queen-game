@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Black Queen - Multiplayer</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+    <style>
+        :root {
+            --color-background: #111827;
+            --color-surface: #1f2937;
+            --color-text: #f9fafb;
+            --color-accent: #10b981;
+            --color-accent-dark: #059669;
+            --color-border: #374151;
+            --radius: 8px;
+            --space: 12px;
+            --font: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto;
+        }
+
+        body {
+            font-family: var(--font);
+            background: linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%);
+            color: var(--color-text);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: var(--space);
+        }
+
+        .container {
+            width: 100%;
+            max-width: 800px;
+            background: var(--color-surface);
+            border-radius: var(--radius);
+            padding: calc(var(--space) * 2);
+            box-shadow: 0 8px 30px rgba(0,0,0,0.4);
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: calc(var(--space) * 2);
+        }
+
+        input {
+            width: 100%;
+            padding: var(--space);
+            border-radius: var(--radius);
+            border: 1px solid var(--color-border);
+            font-size: 1rem;
+            margin-bottom: var(--space);
+        }
+
+        .btn {
+            width: 100%;
+            padding: var(--space);
+            background: var(--color-accent);
+            border: none;
+            border-radius: var(--radius);
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .btn:hover {
+            background: var(--color-accent-dark);
+        }
+
+        .room {
+            text-align: center;
+            margin-top: calc(var(--space) * 2);
+            padding: var(--space);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius);
+        }
+
+        #qrcode {
+            background: white;
+            padding: var(--space);
+            border-radius: var(--radius);
+            display: inline-block;
+        }
+
+        .player-list {
+            margin-top: var(--space);
+            padding: var(--space);
+            background: #111827;
+            border-radius: var(--radius);
+        }
+
+        .player {
+            padding: var(--space);
+            border-bottom: 1px solid var(--color-border);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>♠️ Black Queen Multiplayer ♥️</h1>
+
+        <div id="setup">
+            <input type="text" id="playerName" placeholder="Enter your name">
+            <button class="btn" onclick="createRoom()">Create Room</button>
+            <button class="btn" onclick="joinRoomPrompt()">Join Room</button>
+        </div>
+
+        <div id="lobby" class="hidden">
+            <div class="room">
+                <h2>Room Code: <span id="roomCode">----</span></h2>
+                <div id="qrcode"></div>
+                <p id="roomLink"></p>
+            </div>
+            <div class="player-list" id="players"></div>
+        </div>
+    </div>
+
+    <script>
+        // Simple local multiplayer simulation using temporary data only
+        const state = {
+            players: [],
+            host: "",
+            roomCode: ""
+        }
+
+        // Generate random room code
+        function generateRoomCode() {
+            return Math.random().toString(36).substring(2, 8).toUpperCase();
+        }
+
+        function createRoom() {
+            const name = document.getElementById("playerName").value.trim();
+            if (!name) return alert("Enter your name first!");
+
+            state.roomCode = generateRoomCode();
+            state.host = name;
+            state.players = [name];
+
+            document.getElementById("setup").classList.add("hidden");
+            document.getElementById("lobby").classList.remove("hidden");
+
+            document.getElementById("roomCode").textContent = state.roomCode;
+
+            const link = window.location.origin + "?room=" + state.roomCode;
+            document.getElementById("roomLink").innerHTML = `<a href='${link}' style='color:white;'>${link}</a>`;
+            new QRCode(document.getElementById("qrcode"), link);
+
+            renderPlayers();
+        }
+
+        function joinRoomPrompt() {
+            const code = prompt("Enter room code:").trim().toUpperCase();
+            const name = document.getElementById("playerName").value.trim();
+            if (!name || !code) return alert("Enter both name and code!");
+
+            alert(`Simulated join for room ${code} as ${name}. For real-time play, you’d use Firebase or WebSocket backend.`);
+        }
+
+        function renderPlayers() {
+            const list = document.getElementById("players");
+            list.innerHTML = "";
+            state.players.forEach(p => {
+                const div = document.createElement("div");
+                div.className = "player";
+                div.textContent = p + (p === state.host ? " (Host)" : "");
+                list.appendChild(div);
+            });
+        }
+
+        // Hide helper
+        HTMLElement.prototype.hide = function() { this.classList.add('hidden'); }
+        HTMLElement.prototype.show = function() { this.classList.remove('hidden'); }
+    </script>
+</body>
+</html>
